@@ -1,6 +1,6 @@
 import os
 from app import app, db, login_manager
-from flask import render_template, request, redirect, url_for, flash, session, abort
+from flask import render_template, request, redirect, url_for, flash, session, abort,send_from_directory
 from flask_login import login_user, logout_user, current_user, login_required
 from werkzeug.utils import secure_filename
 from werkzeug.security import check_password_hash
@@ -46,14 +46,13 @@ def upload():
     return render_template('upload.html', form=uploads)
 
 
+
 def get_uploaded_images():
     import os
     rootdir = os.getcwd()
-    print(rootdir)
     lst = []
     for subdir, dirs, files in os.walk(rootdir + '/uploads'):
         for file in files:
-            print (os.path.join(subdir, file))
             lst.append(file)
     return lst
 
@@ -64,7 +63,7 @@ def get_image(filename):
 @app.route('/files')
 @login_required
 def files():
-    return render_template('files.html', filenames=get_uploaded_images())
+    return render_template('files.html', images=get_uploaded_images())
 
 
 @app.route('/login', methods=['POST', 'GET'])
@@ -84,7 +83,7 @@ def login():
         # passed to the login_user() method below.
         user = db.session.execute(db.select(UserProfile).filter_by(username=username)).scalar()
         
-        if user and check_password_hash(user.password,password):
+        if user is not None and check_password_hash(user.password,password):
 
             # Gets user id, load into session
             login_user(user)
@@ -93,6 +92,13 @@ def login():
             flash('Successfully logged in !!')
             return redirect(url_for("upload"))  # The user should be redirected to the upload form instead
     return render_template("login.html", form=form)
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    flash('You have been logged out.', 'success')
+    return redirect(url_for('home'))
 
 # user_loader callback. This callback is used to reload the user object from
 # the user ID stored in the session

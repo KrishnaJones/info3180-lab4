@@ -2,13 +2,17 @@
 
 {% block main %}
 
+<h1 class="page-header">View Images</h1>
+
+{% include 'flash_messages.html' %}
+
 <div class="container">
 
     <ul class="images">
 
-        {% for img in files %}
+        {% for img in images %}
         <li>
-            <img class="allimages" src="{{ url_for('get_image', filename=img) }}" alt="Uploaded Images">
+            <img src="{{ url_for('get_image', filename=img) }}" alt="{{image}}">
         </li>
         {% endfor %}
 
